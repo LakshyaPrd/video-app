@@ -1,30 +1,41 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI ;
 
-if (!MONGODB_URI) {
-  throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env.local'
-  );
+if(!MONGODB_URI){
+   throw new Error('please define MONGODB_URI in your environment variable for databse connection')
 }
 
-const cached = global.mongoose;
-if (!cached) {
-  cached.mongoose = { conn: null, promise: null };
+let cached = global.mongoose;
+
+if(!cached){
+    cached = global.mongoose = {conn: null, promise:null};
 }
 
-async function dbConnect() {
+async function dbConnect () {
     if(cached.conn){
         return cached.conn;
     }
     if(!cached.promise){
-        const object ={
-            bufferCommands: false,
-            severSelectionTimeoutMS: 5000,
+
+        const object = {
+            bufferCommands:false,
+            serverSelectionTimeoutMS:5000
         }
-        //create a new connection and return promise and store in the cache object
+
+        //create a new connection and return promise and store in the cahce object
         cached.promise = mongoose.connect(MONGODB_URI, object).then((mongoose) => {
             return mongoose;
-        });
+        })
     }
+    try {
+        cached.conn = await cached.promise;
+    } catch (error) {
+        cached.promise=null
+        throw error;
+    }
+
+    return cached.conn
 }
+
+export default dbConnect;
