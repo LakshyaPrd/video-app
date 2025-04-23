@@ -21,9 +21,11 @@ export const authOptions = {
 
         if(user){
             token.id = user.id;
+            console.log("user",user.name,user.email);
         }
         if(account){
             token.accessToken= account.access_token;
+            console.log("account",account.provider);
         }
 
         return token;
